@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-storage
+  namespace: logpulse
+  labels:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/component: log-storage
+    app.kubernetes.io/part-of: logpulse
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

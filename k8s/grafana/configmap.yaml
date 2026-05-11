@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: logpulse
+  labels:
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/component: visualization
+    app.kubernetes.io/part-of: logpulse
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    root_url = http://localhost:3000
+    
+    [database]
+    type = sqlite3
+    
+    [auth]
+    disable_login_form = false
+    disable_signout_menu = false
+    
+    [auth.anonymous]
+    enabled = true
+    org_name = Main Org.
+    org_role = Viewer
+    
+    [paths]
+    data = /var/lib/grafana/data
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
+    
+    [log]
+    mode = console
+    level = info
+    
+    [users]
+    default_theme = dark
+    
+    [dashboards]
+    default_home_dashboard_path = /etc/grafana/provisioning/dashboards/logpulse-overview.json

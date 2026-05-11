@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: noisy-service
+  namespace: logpulse
+  labels:
+    app.kubernetes.io/name: noisy-service
+    app.kubernetes.io/component: log-generator
+    app.kubernetes.io/part-of: logpulse
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: noisy-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: noisy-service
+        app.kubernetes.io/component: log-generator
+        app: noisy-service
+        team: platform
+        environment: development
+    spec:
+      containers:
+        - name: noisy-service
+          image: logpulse/noisy-service:latest
+          imagePullPolicy: Never
+          env:
+            - name: APP_NAME
+              value: "noisy-service"
+            - name: ENVIRONMENT
+              value: "development"
+            - name: TEAM
+              value: "platform"
+            - name: LOG_INTERVAL_MS
+              value: "500"
+            - name: NOISE_LEVEL
+              value: "0.15"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30

@@ -16,6 +16,15 @@ LogPulse is a complete observability stack designed to demonstrate the log lifec
        Go App              DaemonSet          StatefulSet        Deployment
 ```
 
+## Container Images
+
+| Component | Image | Description |
+|-----------|-------|-------------|
+| Noisy Service | `adorsys/noisy-service:latest` | Go log generator application |
+| Promtail | `grafana/promtail:2.9.0` | Log collector agent |
+| Loki | `grafana/loki:2.9.0` | Log aggregation system |
+| Grafana | `grafana/grafana:10.2.0` | Visualization platform |
+
 ## Quick Start
 
 ### Prerequisites
@@ -162,6 +171,12 @@ The LogPulse dashboard includes:
 8. **Database Timeouts**: Specific error tracking
 9. **HTTP Methods Distribution**: GET, POST, PUT, DELETE, PATCH
 10. **Response Time Analysis**: Average response times
+
+### Screenshot
+
+![LogPulse Dashboard](docs/images/logs-on-grafana-1.png)
+
+*LogPulse dashboard showing real-time log visualization in Grafana*
 
 ## Configuration
 

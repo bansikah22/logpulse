@@ -26,7 +26,40 @@ data:
             namespaces:
               names:
                 - logpulse
+        relabel_configs:
+          # Keep only pods with app label
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: .+
+          # Set the log path: /var/log/pods/<namespace>_<pod>_<uid>/<container>/0.log
+          # Step 1: Build directory path from namespace_pod_uid
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_pod_name, __meta_kubernetes_pod_uid]
+            target_label: __tmp_dir
+            separator: _
+            replacement: /var/log/pods/$1
+          # Step 2: Append container and log file
+          - source_labels: [__tmp_dir, __meta_kubernetes_pod_container_name]
+            target_label: __path__
+            separator: /
+            replacement: $1/$2/0.log
+          # Extract labels
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
         pipeline_stages:
+          # Stage 1: Parse the Kubernetes log envelope (outer JSON)
+          # Kubernetes wraps container logs as: {"log": "...", "stream": "stdout", "time": "..."}
+          - json:
+              expressions:
+                log: log
+                stream: stream
+          # Stage 2: Parse the inner JSON content from the 'log' field
+          # The actual application log is a JSON string inside the 'log' field
           - json:
               expressions:
                 timestamp: timestamp
@@ -44,53 +77,17 @@ data:
                 path: path
                 user_id: user_id
                 error: error
+              source: log
+          # Stage 3: Extract labels for indexing
           - labels:
               level:
               app:
               environment:
               team:
+          # Stage 4: Set timestamp from log
           - timestamp:
               source: timestamp
               format: RFC3339Nano
+          # Stage 5: Output the message field
           - output:
               source: message
-
-      - job_name: kubernetes-logs
-        kubernetes_sd_configs:
-          - role: pod
-            namespaces:
-              names:
-                - logpulse
-        relabel_configs:
-          - source_labels: [__meta_kubernetes_pod_label_app]
-            target_label: app
-          - source_labels: [__meta_kubernetes_namespace]
-            target_label: namespace
-          - source_labels: [__meta_kubernetes_pod_name]
-            target_label: pod
-        pipeline_stages:
-          - match:
-              selector: '{app="noisy-service"}'
-              stages:
-                - json:
-                    expressions:
-                      timestamp: timestamp
-                      level: level
-                      message: message
-                      app: app
-                      environment: environment
-                      team: team
-                      instance: instance
-                      trace_id: trace_id
-                      status_code: status_code
-                      method: method
-                      path: path
-                      error: error
-                - labels:
-                    level:
-                    app:
-                    environment:
-                    team:
-                - timestamp:
-                    source: timestamp
-                    format: RFC3339Nano

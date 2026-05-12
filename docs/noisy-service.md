@@ -21,7 +21,7 @@ graph LR
     end
     
     C --> D[Container Runtime]
-    D --> E[/var/log/containers]
+    D --> E["var/log/containers"]
 ```
 
 ## Configuration

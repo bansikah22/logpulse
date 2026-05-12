@@ -139,8 +139,8 @@ graph LR
     subgraph Storage["Storage Components"]
         A[Ingester] --> B[Chunk Store]
         A --> C[Index Store]
-        B --> D[/loki/chunks]
-        C --> E[/loki/index]
+        B --> D["loki/chunks"]
+        C --> E["loki/index"]
     end
     
     F[Logs] --> A
